@@ -1,0 +1,279 @@
+; Sat Nov 08 19:19:35 CET 2025
+; 
+;+ (version "3.4.8")
+;+ (build "Build 629")
+
+
+(defclass %3ACLIPS_TOP_LEVEL_SLOT_CLASS "Fake class to save top-level slot information"
+	(is-a USER)
+	(role abstract)
+	(multislot detectadoEn
+;+		(comment "Indica en que ciclo cardiaco se detecto el diagnostico")
+		(type INSTANCE)
+;+		(allowed-classes Ciclo)
+		(create-accessor read-write))
+	(multislot tieneComponente
+;+		(comment "Relacion que indica los componentes presentes en un ECG")
+		(type INSTANCE)
+;+		(allowed-classes Componente)
+		(create-accessor read-write))
+	(multislot tieneDiagnostico
+;+		(comment "Relaciona un ECG con los diagnosticos que hay identificados")
+		(type INSTANCE)
+;+		(allowed-classes Diagnostico)
+		(create-accessor read-write))
+	(single-slot duracion
+;+		(comment "Duracion de un componente en milisegundos. Se calcula como tiempoFin - tiempoInicio")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot amplitudMaxima
+;+		(comment "Amplitud maxima (pico) del componente. Se mide en milivoltios")
+		(type FLOAT)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(multislot tieneCiclo
+;+		(comment "Indica los ciclos que tiene un determinado ECG")
+		(type INSTANCE)
+;+		(allowed-classes Ciclo)
+		(cardinality 1 ?VARIABLE)
+		(create-accessor read-write))
+	(single-slot tiempoFin
+;+		(comment "Tiempo de finalizacion del componenteen milisegundos desde el inicio del regsitro")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(multislot compuestoPor
+;+		(comment "Relacion que indica los componentes que forman parte de un elemento compuesto (complejo, intervalo o segmento)")
+		(type INSTANCE)
+;+		(allowed-classes Componente)
+		(create-accessor read-write))
+	(single-slot numeroCiclo
+;+		(comment "Numero del ciclo del registro EGC")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot tiempoInicio
+;+		(comment "Tiempo del inicio del componente en milisegundos desde el inicio del registro")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot totalCiclos
+;+		(comment "Numero total de ciclos identificados en el ECG")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot motivoDiagnostico
+;+		(comment "Motivo por el cual se determina el diagnostico")
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot frecuenciaCardiaca
+;+		(comment "Frecuencia cardiaca en pulaciones por minuto")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(multislot perteneceACiclo
+;+		(comment "Indica a que ciclo pertenece un componente")
+		(type INSTANCE)
+;+		(allowed-classes Ciclo)
+		(create-accessor read-write)))
+
+(defclass Componente "Clase abstracta que representa cualquier componente identificable en la señal ECG (ondas, complejos, segmentos, intervalos). Fuente: https://en.wikipedia.org/wiki/Electrocardiography"
+	(is-a USER)
+	(role abstract)
+	(single-slot tiempoInicio
+;+		(comment "Tiempo del inicio del componente en milisegundos desde el inicio del registro")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot tiempoFin
+;+		(comment "Tiempo de finalizacion del componenteen milisegundos desde el inicio del regsitro")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot duracion
+;+		(comment "Duracion de un componente en milisegundos. Se calcula como tiempoFin - tiempoInicio")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot amplitudMaxima
+;+		(comment "Amplitud maxima (pico) del componente. Se mide en milivoltios")
+		(type FLOAT)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(multislot perteneceACiclo
+;+		(comment "Indica a que ciclo pertenece un componente")
+		(type INSTANCE)
+;+		(allowed-classes Ciclo)
+		(create-accessor read-write)))
+
+(defclass Onda "Clase abstracta que representa una onda en la señal ECG. Las ondas principales son P, Q, R, S y T, cada una representando diferentes fases de la actividad cardiaca. Fuente: https://en.wikipedia.org/wiki/Electrocardiography"
+	(is-a Componente)
+	(role abstract))
+
+(defclass OndaP "Representa la despolarizacion auricular. Es la primera onda de cada ciclo cardiaco. Amplitud normal: 0.05-0.25 mV. Duracion normal: 80-100 ms. Fuente: https://en.wikipedia.org/wiki/P_wave_(electrocardiography)"
+	(is-a Onda)
+	(role concrete))
+
+(defclass OndaQ "Primera deflexion negativa del complejo QRS. Representa el inicio de la despolarizacion ventricular. Amplitud normal: menos de 0.04 mV (menos del 25% de la onda R). Fuente: https://en.wikipedia.org/wiki/QRS_complex"
+	(is-a Onda)
+	(role concrete))
+
+(defclass OndaR "Primera deflexion positiva del complejo QRS. Es la onda de mayor amplitud en condiciones normales. Representa la despolarizacion de la mayor parte de los ventriculos. Amplitud normal: 0.5-2.5 mV. Fuente: https://en.wikipedia.org/wiki/QRS_complex"
+	(is-a Onda)
+	(role concrete))
+
+(defclass OndaS "Deflexion negativa que sigue a la onda R en el complejo QRS. Representa la fase final de la despolarizacion ventricular. Fuente: https://en.wikipedia.org/wiki/QRS_complex"
+	(is-a Onda)
+	(role concrete))
+
+(defclass OndaT "Representa la repolarizacion ventricular. Generalmente es positiva y de forma redondeada. Su morfologia y amplitud pueden alterarse en diversas patologias. Fuente: https://en.wikipedia.org/wiki/T_wave"
+	(is-a Onda)
+	(role concrete))
+
+(defclass ElementoCompuesto "Clase abstracta para componentes que estan formados por multiples ondas u otros elementos (complejos, segmentos, intervalos)."
+	(is-a Componente)
+	(role abstract)
+	(multislot compuestoPor
+;+		(comment "Relacion que indica los componentes que forman parte de un elemento compuesto (complejo, intervalo o segmento)")
+		(type INSTANCE)
+;+		(allowed-classes Componente)
+		(create-accessor read-write)))
+
+(defclass Complejo "Conjunto de ondas consecutivas que representan un evento electrofisiologico especifico. El mas importante es el complejo QRS. Fuente: https://en.wikipedia.org/wiki/QRS_complex"
+	(is-a ElementoCompuesto)
+	(role abstract))
+
+(defclass ComplejoQRS "Complejo que representa la despolarizacion ventricular. Esta compuesto por las ondas Q, R y S. Duracion normal: 80-120 ms. Fuente: https://en.wikipedia.org/wiki/QRS_complex"
+	(is-a Complejo)
+	(role concrete))
+
+(defclass Segmento "Distancia entre dos ondas consecutivas. No incluyen las ondas que los delimitan. Los segmentos principales son PQ, ST y TP. Fuente: https://en.wikipedia.org/wiki/Electrocardiography"
+	(is-a ElementoCompuesto)
+	(role abstract))
+
+(defclass SegmentoPQ "Segmento entre el final de la onda P y el inicio del complejo QRS. Representa el retraso fisiologico en el nodo auriculoventricular. Normalmente es plano. Fuente: https://en.wikipedia.org/wiki/PR_interval"
+	(is-a Segmento)
+	(role concrete))
+
+(defclass SegmentoST "Segmento entre el final del complejo QRS y el inicio de la onda T. Representa el inicio de la repolarizacion ventricular. Es crucial para el diagnostico de isquemia e infarto. Normalmente es plano. Fuente: https://en.wikipedia.org/wiki/ST_segment"
+	(is-a Segmento)
+	(role concrete))
+
+(defclass SegmentoTP "Segmento entre el final de la onda T y el inicio de la siguiente onda P. Representa la diastole electrica (reposo electrico cardiaco). Se utiliza como linea de base isoelectrica. Fuente: https://en.wikipedia.org/wiki/Electrocardiography"
+	(is-a Segmento)
+	(role concrete))
+
+(defclass Intervalo "Distancia temporal entre dos puntos especificos de la señal ECG que incluye ondas y segmentos. Los intervalos principales son PR, QT y RR. Fuente: https://en.wikipedia.org/wiki/Electrocardiography"
+	(is-a ElementoCompuesto)
+	(role abstract))
+
+(defclass IntervaloPR "Intervalo desde el inicio de la onda P hasta el inicio del complejo QRS. Representa el tiempo de conduccion auriculoventricular. Duracion normal: 120-200 ms. Fuente: https://en.wikipedia.org/wiki/PR_interval"
+	(is-a Intervalo)
+	(role concrete))
+
+(defclass IntervaloQT "Intervalo desde el inicio del complejo QRS hasta el final de la onda T. Representa la despolarizacion y repolarizacion ventricular completa. Duracion normal: 350-440 ms (varia con frecuencia cardiaca). Fuente: https://en.wikipedia.org/wiki/QT_interval"
+	(is-a Intervalo)
+	(role concrete))
+
+(defclass IntervaloRR "Intervalo entre dos ondas R consecutivas. Se utiliza para calcular la frecuencia cardiaca y evaluar la regularidad del ritmo. Fuente: https://en.wikipedia.org/wiki/Heart_rate"
+	(is-a Intervalo)
+	(role concrete))
+
+(defclass Ciclo "Representa un ciclo completo de actividad cardiaca, desde la onda P hasta la siguiente P. Fuente: https://en.wikipedia.org/wiki/Cardiac_cycle"
+	(is-a USER)
+	(role concrete)
+	(single-slot numeroCiclo
+;+		(comment "Numero del ciclo del registro EGC")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write)))
+
+(defclass RegistroECG "Representa un registro completo de un electrocardiograma obtenido de un paciente. Contiene multiples ciclos cardiacos y sus componentes. RESTRICCION: Debe tener al menos un ciclo cardiaco. Fuente: https://en.wikipedia.org/wiki/Electrocardiography"
+	(is-a USER)
+	(role concrete)
+	(single-slot totalCiclos
+;+		(comment "Numero total de ciclos identificados en el ECG")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot frecuenciaCardiaca
+;+		(comment "Frecuencia cardiaca en pulaciones por minuto")
+		(type INTEGER)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(multislot tieneComponente
+;+		(comment "Relacion que indica los componentes presentes en un ECG")
+		(type INSTANCE)
+;+		(allowed-classes Componente)
+		(create-accessor read-write))
+	(multislot tieneCiclo
+;+		(comment "Indica los ciclos que tiene un determinado ECG")
+		(type INSTANCE)
+;+		(allowed-classes Ciclo)
+		(cardinality 1 ?VARIABLE)
+		(create-accessor read-write))
+	(multislot tieneDiagnostico
+;+		(comment "Relaciona un ECG con los diagnosticos que hay identificados")
+		(type INSTANCE)
+;+		(allowed-classes Diagnostico)
+		(create-accessor read-write)))
+
+(defclass Diagnostico "Clase abstracta que representa una conclusion del diagnostico obtenido a partir del ECG.Fuente: https://en.wikipedia.org/wiki/Electrocardiography"
+	(is-a USER)
+	(role abstract)
+	(single-slot motivoDiagnostico
+;+		(comment "Motivo por el cual se determina el diagnostico")
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(multislot detectadoEn
+;+		(comment "Indica en que ciclo cardiaco se detecto el diagnostico")
+		(type INSTANCE)
+;+		(allowed-classes Ciclo)
+		(create-accessor read-write)))
+
+(defclass Normal "Diagnostico que indica un ritmo cardiaco normal. Frecuencia cardiacaentre 60 y 100 latidos por minuto. Fuente:https://es.wikipedia.org/wiki/Ritmo_sinusal"
+	(is-a Diagnostico)
+	(role concrete))
+
+(defclass Arritmia "Diagnostico que indica una alteracion del ritmo cardiaco normal. Puede manifestarse como cambios en la frecuencia, regularidad o secuencia de activacion cardiaca. Fuente: http://www.bem.fi/book/19/19.htm"
+	(is-a Diagnostico)
+	(role abstract))
+
+(defclass Bradicardia "Arritmia caracterizada por una frecuencia cardiaca inferior a 60 latidos por minuto. Fuente: http://www.bem.fi/book/19/19.htm"
+	(is-a Arritmia)
+	(role concrete))
+
+(defclass Taquicardia "Arritmia caracterizada por una frecuencia cardiaca superior a 100 latidos por minuto. Fuente: http://www.bem.fi/book/19/19.htm"
+	(is-a Arritmia)
+	(role concrete))
+
+(defclass ContraccionVentricularPrematura "Latido cardiaco prematuro originado en los ventriculos. Se caracteriza por un complejo QRS ancho y anormal que ocurre antes del siguiente latido esperado. Fuente: http://www.bem.fi/book/19/19.htm"
+	(is-a Arritmia)
+	(role concrete))
+
+(defclass PatologiaCardiaca "Diagnostico relacionado con enfermedades estructurales o funcionales del corazon, como isquemia o infarto. Fuente: https://en.wikipedia.org/wiki/Electrocardiography"
+	(is-a Diagnostico)
+	(role abstract))
+
+(defclass IsquemiaCoronaria "Reduccion del flujo sanguineo al musculo cardiaco. En el ECG se caracteriza por cambios en el segmento ST (depresion) e inversion de ondas T. Fuente: https://en.wikipedia.org/w/index.php?title=Electrocardiography&oldid=513556137"
+	(is-a PatologiaCardiaca)
+	(role concrete))
+
+(defclass InfartoAgudoMiocardio "Necrosis del musculo cardiaco debido a isquemia prolongada. En el ECG se caracteriza por elevacion del segmento ST, ondas Q patologicas e inversion de ondas T. Fuente: https://en.wikipedia.org/w/index.php?title=Electrocardiography&oldid=513556137"
+	(is-a PatologiaCardiaca)
+	(role concrete))
+
+(defclass AnomaliaElectrica
+	(is-a Diagnostico)
+	(role abstract))
+
+(defclass Hipopotasemia "Nivel bajo de potasio en sangre. En el ECG se caracteriza por ondas T aplanadas o invertidas, ondas U prominentes y prolongacion del intervalo QT. Fuente: https://en.wikipedia.org/wiki/Hypokalemia#Electrocardiogram"
+	(is-a AnomaliaElectrica)
+	(role concrete))
+
+(defclass Hipocalcemia "Nivel bajo de calcio en sangre. En el ECG se manifiesta principalmente por prolongacion del intervalo QT (especialmente del segmento ST). Fuente: https://en.wikipedia.org/w/index.php?title=Electrocardiography&oldid=513556137"
+	(is-a AnomaliaElectrica)
+	(role concrete))
